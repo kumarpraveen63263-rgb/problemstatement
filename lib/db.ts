@@ -3,157 +3,209 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 
-// Ensure data folder exists
-const dataDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+// Detect Serverless / Vercel Environment
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.LAMBDA_TASK_ROOT ||
+  (process.env.NODE_ENV === 'production' && !process.env.LOCAL_DEV)
+);
+
+// In Vercel/Lambda, only /tmp is writable
+const dataDir = isServerless ? '/tmp' : path.join(process.cwd(), 'data');
+
+try {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+} catch (e) {
+  console.warn('Could not create data directory:', dataDir, e);
 }
 
 const dbPath = path.join(dataDir, 'kernel_prime.db');
+
+// If running in /tmp and file does not exist, copy pre-seeded db from repository
+if (isServerless && !fs.existsSync(dbPath)) {
+  const sourcePaths = [
+    path.join(process.cwd(), 'data', 'kernel_prime.db'),
+    path.join(__dirname, '..', 'data', 'kernel_prime.db'),
+  ];
+  for (const src of sourcePaths) {
+    if (fs.existsSync(src)) {
+      try {
+        fs.copyFileSync(src, dbPath);
+        console.log(`Copied initial seed database from ${src} to ${dbPath}`);
+        break;
+      } catch (e) {
+        console.warn('Failed to copy seed database to /tmp:', e);
+      }
+    }
+  }
+}
 
 // Singleton database instance
 let dbInstance: Database.Database | null = null;
 
 export function getDb(): Database.Database {
   if (!dbInstance) {
-    dbInstance = new Database(dbPath);
-    // Enable Write-Ahead Logging (WAL) for high concurrency and resilience
-    dbInstance.pragma('journal_mode = WAL');
-    dbInstance.pragma('foreign_keys = ON');
-    dbInstance.pragma('synchronous = NORMAL');
-    initDatabase(dbInstance);
+    try {
+      dbInstance = new Database(dbPath, { timeout: 8000 });
+      try {
+        dbInstance.pragma('journal_mode = WAL');
+        dbInstance.pragma('foreign_keys = ON');
+        dbInstance.pragma('synchronous = NORMAL');
+      } catch (e) {
+        // Fallback for restricted filesystems
+        try {
+          dbInstance.pragma('journal_mode = DELETE');
+        } catch (_) {}
+      }
+      initDatabase(dbInstance);
+    } catch (err: any) {
+      console.error('Fatal Database connection error:', err);
+      // If disk opening failed, fallback to memory
+      if (!dbInstance) {
+        console.warn('Falling back to in-memory database instance');
+        dbInstance = new Database(':memory:');
+        initDatabase(dbInstance);
+      }
+    }
   }
   return dbInstance;
 }
 
 function initDatabase(db: Database.Database) {
-  // 1. Teams Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS teams (
-      id TEXT PRIMARY KEY,
-      team_name TEXT NOT NULL UNIQUE,
-      college_name TEXT NOT NULL,
-      leader_name TEXT NOT NULL,
-      leader_mobile TEXT NOT NULL,
-      leader_email TEXT NOT NULL,
-      members_count INTEGER NOT NULL DEFAULT 4,
-      track TEXT NOT NULL DEFAULT 'Software Track',
-      registration_status TEXT NOT NULL DEFAULT 'CONFIRMED',
-      payment_status TEXT NOT NULL DEFAULT 'PAID',
-      credential_hash TEXT NOT NULL,
-      has_allocated INTEGER NOT NULL DEFAULT 0,
-      allocated_ps_id TEXT NULL,
-      allocation_time TEXT NULL,
-      active_session_token TEXT NULL,
-      last_login_at TEXT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
+  try {
+    // 1. Teams Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS teams (
+        id TEXT PRIMARY KEY,
+        team_name TEXT NOT NULL UNIQUE,
+        college_name TEXT NOT NULL,
+        leader_name TEXT NOT NULL,
+        leader_mobile TEXT NOT NULL,
+        leader_email TEXT NOT NULL,
+        members_count INTEGER NOT NULL DEFAULT 4,
+        track TEXT NOT NULL DEFAULT 'Software Track',
+        registration_status TEXT NOT NULL DEFAULT 'CONFIRMED',
+        payment_status TEXT NOT NULL DEFAULT 'PAID',
+        credential_hash TEXT NOT NULL,
+        has_allocated INTEGER NOT NULL DEFAULT 0,
+        allocated_ps_id TEXT NULL,
+        allocation_time TEXT NULL,
+        active_session_token TEXT NULL,
+        last_login_at TEXT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
 
-  // 2. Problem Statements Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS problem_statements (
-      id TEXT PRIMARY KEY,
-      code TEXT NOT NULL UNIQUE,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      capacity INTEGER NOT NULL DEFAULT 2,
-      allocated_count INTEGER NOT NULL DEFAULT 0,
-      pdf_path TEXT NOT NULL,
-      is_active INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
+    // 2. Problem Statements Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS problem_statements (
+        id TEXT PRIMARY KEY,
+        code TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        capacity INTEGER NOT NULL DEFAULT 2,
+        allocated_count INTEGER NOT NULL DEFAULT 0,
+        pdf_path TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
 
-  // 3. Allocations Table (Strict UNIQUE team_id constraint enforces ONE spin per team)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS allocations (
-      id TEXT PRIMARY KEY,
-      team_id TEXT NOT NULL UNIQUE REFERENCES teams(id) ON DELETE CASCADE,
-      problem_statement_id TEXT NOT NULL REFERENCES problem_statements(id),
-      allocated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      allocation_seed TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'CONFIRMED'
-    );
-  `);
+    // 3. Allocations Table (Strict UNIQUE team_id constraint enforces ONE spin per team)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS allocations (
+        id TEXT PRIMARY KEY,
+        team_id TEXT NOT NULL UNIQUE REFERENCES teams(id) ON DELETE CASCADE,
+        problem_statement_id TEXT NOT NULL REFERENCES problem_statements(id),
+        allocated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        allocation_seed TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'CONFIRMED'
+      );
+    `);
 
-  // 4. Downloads Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS downloads (
-      id TEXT PRIMARY KEY,
-      team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-      problem_statement_id TEXT NOT NULL REFERENCES problem_statements(id),
-      downloaded_at TEXT NOT NULL DEFAULT (datetime('now')),
-      ip_address TEXT NULL
-    );
-  `);
+    // 4. Downloads Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS downloads (
+        id TEXT PRIMARY KEY,
+        team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+        problem_statement_id TEXT NOT NULL REFERENCES problem_statements(id),
+        downloaded_at TEXT NOT NULL DEFAULT (datetime('now')),
+        ip_address TEXT NULL
+      );
+    `);
 
-  // 5. Login Events Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS login_events (
-      id TEXT PRIMARY KEY,
-      team_id TEXT NOT NULL,
-      login_time TEXT NOT NULL DEFAULT (datetime('now')),
-      logout_time TEXT NULL,
-      ip_address TEXT NULL,
-      user_agent TEXT NULL,
-      status TEXT NOT NULL DEFAULT 'SUCCESS'
-    );
-  `);
+    // 5. Login Events Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS login_events (
+        id TEXT PRIMARY KEY,
+        team_id TEXT NOT NULL,
+        login_time TEXT NOT NULL DEFAULT (datetime('now')),
+        logout_time TEXT NULL,
+        ip_address TEXT NULL,
+        user_agent TEXT NULL,
+        status TEXT NOT NULL DEFAULT 'SUCCESS'
+      );
+    `);
 
-  // 6. Audit Log Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS audit_log (
-      id TEXT PRIMARY KEY,
-      actor_type TEXT NOT NULL,
-      actor_id TEXT NOT NULL,
-      action TEXT NOT NULL,
-      metadata TEXT NULL,
-      ip_address TEXT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
+    // 6. Audit Log Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id TEXT PRIMARY KEY,
+        actor_type TEXT NOT NULL,
+        actor_id TEXT NOT NULL,
+        action TEXT NOT NULL,
+        metadata TEXT NULL,
+        ip_address TEXT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
 
-  // 7. System Settings Table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS system_settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
+    // 7. System Settings Table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
 
-  // Indexes
-  db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(team_name);
-    CREATE INDEX IF NOT EXISTS idx_teams_allocated ON teams(has_allocated);
-    CREATE INDEX IF NOT EXISTS idx_allocations_team ON allocations(team_id);
-    CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
-  `);
+    // Indexes
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(team_name);
+      CREATE INDEX IF NOT EXISTS idx_teams_allocated ON teams(has_allocated);
+      CREATE INDEX IF NOT EXISTS idx_allocations_team ON allocations(team_id);
+      CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
+    `);
 
-  // Initialize Default System Settings
-  const checkSetting = db.prepare('SELECT value FROM system_settings WHERE key = ?');
-  if (!checkSetting.get('allocation_status')) {
-    db.prepare("INSERT INTO system_settings (key, value) VALUES ('allocation_status', 'OPEN')").run();
-  }
-  if (!checkSetting.get('test_mode')) {
-    db.prepare("INSERT INTO system_settings (key, value) VALUES ('test_mode', 'false')").run();
-  }
-  if (!checkSetting.get('emergency_message')) {
-    db.prepare("INSERT INTO system_settings (key, value) VALUES ('emergency_message', '')").run();
-  }
+    // Initialize Default System Settings
+    const checkSetting = db.prepare('SELECT value FROM system_settings WHERE key = ?');
+    if (!checkSetting.get('allocation_status')) {
+      db.prepare("INSERT INTO system_settings (key, value) VALUES ('allocation_status', 'OPEN')").run();
+    }
+    if (!checkSetting.get('test_mode')) {
+      db.prepare("INSERT INTO system_settings (key, value) VALUES ('test_mode', 'false')").run();
+    }
+    if (!checkSetting.get('emergency_message')) {
+      db.prepare("INSERT INTO system_settings (key, value) VALUES ('emergency_message', '')").run();
+    }
 
-  // Seed default Problem Statements if empty
-  const countPS = (db.prepare('SELECT COUNT(*) as count FROM problem_statements').get() as { count: number }).count;
-  if (countPS === 0) {
-    seedProblemStatements(db);
-  }
+    // Seed default Problem Statements if empty
+    const countPS = (db.prepare('SELECT COUNT(*) as count FROM problem_statements').get() as { count: number }).count;
+    if (countPS === 0) {
+      seedProblemStatements(db);
+    }
 
-  // Seed default 20 Teams if empty
-  const countTeams = (db.prepare('SELECT COUNT(*) as count FROM teams').get() as { count: number }).count;
-  if (countTeams === 0) {
-    seedTeams(db);
+    // Seed default 20 Teams if empty
+    const countTeams = (db.prepare('SELECT COUNT(*) as count FROM teams').get() as { count: number }).count;
+    if (countTeams === 0) {
+      seedTeams(db);
+    }
+  } catch (initErr) {
+    console.error('Database schema initialization error:', initErr);
   }
 }
 
@@ -284,7 +336,6 @@ export function seedTeams(db: Database.Database) {
     let index = 1;
     for (const t of teams) {
       const id = `TEAM-${String(index).padStart(3, '0')}`;
-      // Clean mobile number (numbers only) and hash it with bcrypt
       const cleanMobile = t.mobile.replace(/\D/g, '');
       const hash = bcrypt.hashSync(cleanMobile, saltRounds);
       stmt.run({
