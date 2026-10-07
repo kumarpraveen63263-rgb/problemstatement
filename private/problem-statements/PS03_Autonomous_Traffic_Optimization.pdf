@@ -1,0 +1,52 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >> endobj
+4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+6 0 obj << /Length 2131 >> stream
+BT
+/F1 16 Tf 50 740 Td (S.A. ENGINEERING COLLEGE) Tj
+/F2 10 Tf 0 -15 Td (Autonomous Institution | Affiliated to Anna University | NBA & NAAC 'A' Grade) Tj
+/F2 9 Tf 0 -13 Td (Dept of Electronics & Communication Engg & Dept of Electronics Engg [VLSI Design & Technology]) Tj
+0 -20 Td 512 0 0 -1 re S
+/F1 18 Tf 0 -25 Td (KERNEL PRIME '26 - SOFTWARE TRACK) Tj
+/F2 10 Tf 0 -14 Td (National Level 24-Hour Hackathon | October 8-9, 2026) Tj
+/F1 14 Tf 0 -28 Td (OFFICIAL PROBLEM STATEMENT: PS-03) Tj
+/F1 12 Tf 0 -18 Td (Adaptive Urban Traffic & Autonomous Emergency Corridor Routing) Tj
+/F2 10 Tf 0 -15 Td (Domain: Smart Cities / Computer Vision / Graph Optimization) Tj
+0 -15 Td 512 0 0 -1 re S
+/F1 11 Tf 0 -22 Td (1. PROBLEM OVERVIEW & CHALLENGE STATEMENT) Tj
+/F2 9.5 Tf 0 -15 Td (Design a dynamic city-scale routing protocol leveraging real-time vision sensor streams to clear gre) Tj
+0 -12 Td (en wave corridors for first responders while minimizing overall grid congestion.) Tj
+/F1 11 Tf 0 -22 Td (2. MANDATORY ARCHITECTURAL REQUIREMENTS) Tj
+/F2 9 Tf 0 -14 Td ([REQ-1] YOLO/Edge-vision vehicle counting and density estimation across multi-lane junctions.) Tj
+/F2 9 Tf 0 -14 Td ([REQ-2] Dynamic reinforcement-learning phase timing for smart traffic light controllers.) Tj
+/F2 9 Tf 0 -14 Td ([REQ-3] Ultra-reliable ambulance and fire responder priority corridor preemption protocol.) Tj
+/F2 9 Tf 0 -14 Td ([REQ-4] Decentralized V2X \(Vehicle-to-Infrastructure\) alert broadcast network.) Tj
+/F2 9 Tf 0 -14 Td ([REQ-5] Interactive 3D digital-twin GIS dashboard visualizing live congestion and ETA metrics.) Tj
+/F1 11 Tf 0 -22 Td (3. HACKATHON EVALUATION MATRIX) Tj
+/F2 9 Tf 0 -13 Td (* System Architecture & Concurrency Resilience: 25%) Tj
+0 -12 Td (* Technical Innovation & Production Viability: 25%) Tj
+0 -12 Td (* Live Demo & Real-World Latency Benchmarks: 30%) Tj
+0 -12 Td (* Security Hardening, UI Polish & Documentation: 20%) Tj
+0 -25 Td 512 0 0 -1 re S
+/F1 9 Tf 0 -16 Td (CONFIDENTIAL - AUTHORIZED ALLOCATION COPY ONLY) Tj
+/F2 8 Tf 0 -12 Td (Generated securely via Kernel Prime Allocation Engine. Strictly non-transferable.) Tj
+ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000000 00000 n 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000000326 00000 n 
+0000000396 00000 n 
+trailer << /Size 8 /Root 1 0 R >>
+startxref
+2578
+%%EOF

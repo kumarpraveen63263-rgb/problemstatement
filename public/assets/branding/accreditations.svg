@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 40" width="100%" height="100%">
+  <g fill="#AEB6C2" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="1">
+    <rect x="0" y="5" width="80" height="28" rx="4" fill="#0D1117" stroke="rgba(255,255,255,0.1)"/>
+    <text x="15" y="23" fill="#00C8FF">NAAC 'A'</text>
+
+    <rect x="90" y="5" width="70" height="28" rx="4" fill="#0D1117" stroke="rgba(255,255,255,0.1)"/>
+    <text x="105" y="23" fill="#F4B400">NBA</text>
+
+    <rect x="170" y="5" width="85" height="28" rx="4" fill="#0D1117" stroke="rgba(255,255,255,0.1)"/>
+    <text x="180" y="23" fill="#FFFFFF">ANNA UNIV</text>
+
+    <rect x="265" y="5" width="105" height="28" rx="4" fill="#0D1117" stroke="rgba(255,255,255,0.1)"/>
+    <text x="275" y="23" fill="#00C8FF">ECE &amp; VLSI</text>
+  </g>
+</svg>

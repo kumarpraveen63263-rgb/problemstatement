@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%" opacity="0.12">
+  <defs>
+    <pattern id="circuitGrid" width="160" height="160" patternUnits="userSpaceOnUse">
+      <path d="M 0 40 L 40 40 L 60 20 L 100 20 L 120 40 L 160 40" fill="none" stroke="#00C8FF" stroke-width="1.2"/>
+      <path d="M 40 160 L 40 120 L 60 100 L 60 60 L 80 40 L 120 40" fill="none" stroke="#F4B400" stroke-width="1"/>
+      <path d="M 80 160 L 100 140 L 140 140 L 160 160" fill="none" stroke="#00C8FF" stroke-width="1"/>
+      <circle cx="40" cy="40" r="3" fill="#00C8FF"/>
+      <circle cx="100" cy="20" r="3" fill="#F4B400"/>
+      <circle cx="60" cy="60" r="2.5" fill="#00C8FF"/>
+      <circle cx="140" cy="140" r="3" fill="#F4B400"/>
+      <rect x="95" y="95" width="14" height="14" fill="none" stroke="#00C8FF" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#circuitGrid)" />
+</svg>
