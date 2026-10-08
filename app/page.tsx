@@ -48,7 +48,7 @@ export default function LoginPage() {
     if (!next) playClickSound();
   };
 
-  const [ribbonEnabled, setRibbonEnabled] = useState<boolean | null>(null);
+  const [ribbonEnabled, setRibbonEnabled] = useState(false);
 
   // Check existing session and ribbon inauguration setting on mount
   useEffect(() => {
@@ -66,16 +66,22 @@ export default function LoginPage() {
         // Not authenticated
       }
 
-      // Check if Ribbon Cutting is enabled in Admin settings
+      // Check if Ribbon Cutting is enabled in Admin settings (strictly uncached)
       try {
-        const statusRes = await fetch('/api/allocation/status');
+        const statusRes = await fetch(`/api/allocation/status?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        });
         if (statusRes.ok) {
           const statusData = await statusRes.json();
-          if (typeof statusData.ribbonEnabled === 'boolean') {
-            setRibbonEnabled(statusData.ribbonEnabled);
-          }
+          setRibbonEnabled(statusData.ribbonEnabled === true);
         }
-      } catch (e) {}
+      } catch (e) {
+        setRibbonEnabled(false);
+      }
     }
     checkExistingSession();
   }, [router]);
@@ -173,7 +179,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col justify-between relative bg-background cyber-grid-bg selection:bg-electric-blue selection:text-black">
       
       {/* Official Launch Ceremony Ribbon Cutting Overlay (Only active when enabled by Admin for Chief Guest) */}
-      {ribbonEnabled !== false && <RibbonInauguration />}
+      {ribbonEnabled && <RibbonInauguration />}
 
       {/* Floating Audio Control in Corner */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50">
@@ -486,17 +492,19 @@ export default function LoginPage() {
         <p>
           © 2026 S.A. Engineering College • {EVENT_CONFIG.eventName} • {EVENT_CONFIG.eventTagline}
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            sessionStorage.removeItem('kp26_inaugurated_v1');
-            window.location.reload();
-          }}
-          className="text-[11px] text-text-muted hover:text-premium-gold transition-colors flex items-center gap-1 cursor-pointer"
-          title="Replay Official Launch Ceremony"
-        >
-          <span>✂️ Replay Launch Ceremony</span>
-        </button>
+        {ribbonEnabled && (
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem('kp26_inaugurated_v1');
+              window.location.reload();
+            }}
+            className="text-[11px] text-text-muted hover:text-premium-gold transition-colors flex items-center gap-1 cursor-pointer"
+            title="Replay Official Launch Ceremony"
+          >
+            <span>✂️ Replay Launch Ceremony</span>
+          </button>
+        )}
       </footer>
     </div>
   );
