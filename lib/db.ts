@@ -302,26 +302,26 @@ export function seedProblemStatements(db: Database.Database) {
 
 export function seedTeams(db: Database.Database) {
   const initialTeams = [
-    { name: "ZEYPHER", college: "S.A. Engineering College", leader: "S.Sowravkanth", mobile: "8056264662", email: "zeypher@saec.ac.in", count: 4 },
-    { name: "AGRILINK", college: "S.A. Engineering College", leader: "J BALAJI", mobile: "9629001885", email: "agrilink@saec.ac.in", count: 4 },
-    { name: "QUANTUM CODERS", college: "S.A. Engineering College", leader: "Mugesh B", mobile: "6383210562", email: "quantumcoders@saec.ac.in", count: 4 },
-    { name: "DH-SQUAD", college: "S.A. Engineering College", leader: "DHARSHIGA SHREE P", mobile: "9962289507", email: "dhsquad@saec.ac.in", count: 4 },
-    { name: "DUO GIRLS", college: "S.A. Engineering College", leader: "Reshma J S", mobile: "948842345", email: "duogirls@saec.ac.in", count: 2 },
-    { name: "MAATRAM", college: "S.A. Engineering College", leader: "Eniya VK", mobile: "9025220712", email: "maatram@saec.ac.in", count: 4 },
-    { name: "GAMMA TRIAD", college: "S.A. Engineering College", leader: "Ramanath Sankaranarayanan", mobile: "9488476952", email: "gammatriad@saec.ac.in", count: 3 },
-    { name: "HACKNOVA", college: "S.A. Engineering College", leader: "Nandhitha S", mobile: "9361263243", email: "hacknova@saec.ac.in", count: 4 },
-    { name: "DEBUGGERS", college: "S.A. Engineering College", leader: "JAIKRISHNA V", mobile: "7448462496", email: "debuggers@saec.ac.in", count: 4 },
-    { name: "KOHINOOR", college: "S.A. Engineering College", leader: "Pritha Kundu", mobile: "9080278357", email: "kohinoor@saec.ac.in", count: 4 },
-    { name: "NEXTGENMINDS", college: "S.A. Engineering College", leader: "YOKESHWARAN M", mobile: "8438916244", email: "nextgenminds@saec.ac.in", count: 4 },
-    { name: "NIRECTA", college: "S.A. Engineering College", leader: "Viyuka S S", mobile: "7305533964", email: "nirecta@saec.ac.in", count: 4 },
-    { name: "PROOFFORGE", college: "S.A. Engineering College", leader: "SOLARAJU LOKESH RAJU", mobile: "7207470289", email: "proofforge@saec.ac.in", count: 4 },
-    { name: "QUARTET", college: "S.A. Engineering College", leader: "N Harish Vidyarth", mobile: "6382551983", email: "quartet@saec.ac.in", count: 4 },
-    { name: "QUDRAFORCE", college: "S.A. Engineering College", leader: "Rakshana R", mobile: "9444111954", email: "qudraforce@saec.ac.in", count: 4 },
-    { name: "TEAM CONTRA", college: "S.A. Engineering College", leader: "BALAJIVASAN S", mobile: "9176486966", email: "teamcontra@saec.ac.in", count: 4 },
-    { name: "TERRASENTINAL", college: "S.A. Engineering College", leader: "Selvi", mobile: "9677323629", email: "terrasentinal@saec.ac.in", count: 4 },
-    { name: "ZENORA", college: "S.A. Engineering College", leader: "Nivethitha P", mobile: "7871855196", email: "zenora@saec.ac.in", count: 4 },
-    { name: "CONQUERORS", college: "S.A. Engineering College", leader: "DIVAKAR R", mobile: "7904477539", email: "conquerors@saec.ac.in", count: 4 },
-    { name: "TEAM HUSTLERS", college: "S.A. Engineering College", leader: "Dharani dharan K", mobile: "9042254242", email: "teamhustlers@saec.ac.in", count: 4 }
+    { name: "ZEYPHER", college: "SRM Institute of Science and Technology Ramapuram", leader: "S.Sowravkanth", mobile: "8056264662", email: "zeypher@saec.ac.in", count: 4 },
+    { name: "AGRILINK", college: "SHREE VENKATESHWARA HI-TECH ENGINEERING COLLEGE", leader: "J BALAJI", mobile: "9629001885", email: "agrilink@saec.ac.in", count: 4 },
+    { name: "QUANTUM CODERS", college: "Dr.MGR university", leader: "Mugesh B", mobile: "6383210562", email: "quantumcoders@saec.ac.in", count: 4 },
+    { name: "DH-SQUAD", college: "R.M.D ENGINEERING COLLEGE", leader: "DHARSHIGA SHREE P", mobile: "9962289507", email: "dhsquad@saec.ac.in", count: 4 },
+    { name: "DUO GIRLS", college: "Easwari engineering college", leader: "Reshma J S", mobile: "948842345", email: "duogirls@saec.ac.in", count: 2 },
+    { name: "MAATRAM", college: "Panimalar engineering college chennai", leader: "Eniya VK", mobile: "9025220712", email: "maatram@saec.ac.in", count: 4 },
+    { name: "GAMMA TRIAD", college: "VIT Chennai", leader: "Ramanath Sankaranarayanan", mobile: "9488476952", email: "gammatriad@saec.ac.in", count: 3 },
+    { name: "HACKNOVA", college: "Saveetha Engineering College", leader: "Nandhitha S", mobile: "9361263243", email: "hacknova@saec.ac.in", count: 4 },
+    { name: "DEBUGGERS", college: "RMK ENGINEERING COLLEGE", leader: "JAIKRISHNA V", mobile: "7448462496", email: "debuggers@saec.ac.in", count: 4 },
+    { name: "KOHINOOR", college: "Easwari Engineering College", leader: "Pritha Kundu", mobile: "9080278357", email: "kohinoor@saec.ac.in", count: 4 },
+    { name: "NEXTGENMINDS", college: "VEL TECH HIGH TECH DR RANGARAJAN DR SAKUNTHALA ENGINEERING COLLEGE", leader: "YOKESHWARAN M", mobile: "8438916244", email: "nextgenminds@saec.ac.in", count: 4 },
+    { name: "NIRECTA", college: "Saveetha Engineering College", leader: "Viyuka S S", mobile: "7305533964", email: "nirecta@saec.ac.in", count: 4 },
+    { name: "PROOFFORGE", college: "R.M.K ENGINEERING COLLEGE", leader: "SOLARAJU LOKESH RAJU", mobile: "7207470289", email: "proofforge@saec.ac.in", count: 4 },
+    { name: "QUARTET", college: "Rajalakshmi Engineering College", leader: "N Harish Vidyarth", mobile: "6382551983", email: "quartet@saec.ac.in", count: 4 },
+    { name: "QUDRAFORCE", college: "RMK Group of Institutions", leader: "Rakshana R", mobile: "9444111954", email: "qudraforce@saec.ac.in", count: 4 },
+    { name: "TEAM CONTRA", college: "PANIMALAR ENGINEERING COLLEGE", leader: "BALAJIVASAN S", mobile: "9176486966", email: "teamcontra@saec.ac.in", count: 4 },
+    { name: "TERRASENTINAL", college: "Rmk engineering college", leader: "Selvi", mobile: "9677323629", email: "terrasentinal@saec.ac.in", count: 4 },
+    { name: "ZENORA", college: "R.M.K Engineering College", leader: "Nivethitha P", mobile: "7871855196", email: "zenora@saec.ac.in", count: 4 },
+    { name: "CONQUERORS", college: "Karpagam institute of technology", leader: "DIVAKAR R", mobile: "7904477539", email: "conquerors@saec.ac.in", count: 4 },
+    { name: "TEAM HUSTLERS", college: "Saveetha engineering college", leader: "Dharani dharan K", mobile: "9042254242", email: "teamhustlers@saec.ac.in", count: 4 }
   ];
 
   const stmt = db.prepare(`
