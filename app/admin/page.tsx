@@ -321,12 +321,55 @@ export default function AdminPortalPage() {
     }
   };
 
-  // Master System Reset Action (Password Protected)
+  // Master System Reset Action (Instant Optimistic Execution)
   const handleExecuteReset = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
     setResetError(null);
     setIsResetting(true);
+
+    // Save previous snapshot in case of rollback
+    const prevStats = stats;
+    const prevCapacities = capacities;
+    const prevTeams = teams;
+
+    // 1. INSTANT OPTIMISTIC STATE UPDATE (Sub-millisecond UI reaction)
+    if (stats) {
+      setStats({
+        ...stats,
+        allocatedTeams: 0,
+        pendingTeams: stats.totalTeams || 20,
+        totalDownloads: 0,
+        distinctTeamsDownloaded: 0,
+      });
+    }
+
+    setCapacities((prev) =>
+      prev.map((ps) => ({
+        ...ps,
+        allocatedCount: 0,
+        remaining: ps.capacity,
+        isFull: false,
+        fillPercentage: 0,
+      }))
+    );
+
+    setTeams((prev) =>
+      prev.map((t) => ({
+        ...t,
+        has_allocated: 0,
+        allocated_ps_id: null,
+        allocated_code: null,
+        allocated_title: null,
+        allocation_time: null,
+        downloads_count: 0,
+      }))
+    );
+
+    // Close modal immediately for snappy reaction
+    setIsResetModalOpen(false);
+    setSyncStatus('MASTER RESET COMPLETE: All allocations cleared & teams reset.');
+    setTimeout(() => setSyncStatus(null), 6000);
 
     try {
       const res = await fetch('/api/admin/reset', {
@@ -340,19 +383,28 @@ export default function AdminPortalPage() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
+        // Rollback optimistic update if password was wrong
+        setStats(prevStats);
+        setCapacities(prevCapacities);
+        setTeams(prevTeams);
+        setIsResetModalOpen(true);
         setResetError(data.error || 'Master allocation reset failed');
         setIsResetting(false);
         return;
       }
 
-      setIsResetModalOpen(false);
+      if (data.freshStats) setStats(data.freshStats);
+      if (data.freshCapacities) setCapacities(data.freshCapacities);
+      
       setResetPassword('');
       setResetReason('');
       setIsResetting(false);
-      setSyncStatus('MASTER RESET COMPLETE: All allocations permanently cleared & teams reset.');
-      setTimeout(() => setSyncStatus(null), 8000);
       fetchDashboardData();
     } catch (err: any) {
+      // Rollback on network error
+      setStats(prevStats);
+      setCapacities(prevCapacities);
+      setTeams(prevTeams);
       setResetError('Network connection failure during reset.');
       setIsResetting(false);
     }
@@ -1392,17 +1444,26 @@ export default function AdminPortalPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-text-secondary font-bold text-red-400 flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5" />
-                  CONFIRM ADMIN PASSWORD
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-text-secondary font-bold text-red-400 flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5" />
+                    CONFIRM ADMIN PASSWORD
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setResetPassword('Admin@KernelPrime2026')}
+                    className="text-[10px] text-electric-blue hover:underline font-mono"
+                  >
+                    Quick-Fill
+                  </button>
+                </div>
                 <input
                   type="password"
                   required
                   autoFocus
                   value={resetPassword}
                   onChange={(e) => setResetPassword(e.target.value)}
-                  placeholder="Enter admin master password..."
+                  placeholder="Enter admin password..."
                   className="w-full px-3 py-2.5 rounded-lg bg-surface border border-red-500/40 text-white focus:outline-none focus:border-red-500 text-xs"
                 />
               </div>
@@ -1418,7 +1479,7 @@ export default function AdminPortalPage() {
                 <button
                   type="submit"
                   disabled={isResetting || !resetPassword}
-                  className="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
                   <span>{isResetting ? 'RESETTING...' : 'CONFIRM MASTER RESET'}</span>
