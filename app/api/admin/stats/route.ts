@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
     // 5. System settings
     const statusSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'allocation_status'").get() as { value: string } | undefined;
     const testModeSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'test_mode'").get() as { value: string } | undefined;
+    const ribbonSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'ribbon_enabled'").get() as { value: string } | undefined;
 
     return NextResponse.json({
       success: true,
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
         teamsActive: Math.max(teamsActive, allocatedTeams > 0 ? 1 : 0),
         allocationStatus: statusSetting?.value || 'OPEN',
         testMode: testModeSetting?.value === 'true',
+        ribbonEnabled: ribbonSetting ? ribbonSetting.value === 'true' : true,
       },
       capacities: problemStatements.map((ps) => ({
         id: ps.id,

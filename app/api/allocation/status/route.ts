@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 
     const statusSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'allocation_status'").get() as { value: string } | undefined;
     const testModeSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'test_mode'").get() as { value: string } | undefined;
+    const ribbonSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'ribbon_enabled'").get() as { value: string } | undefined;
 
     const formatted = statements.map((ps) => {
       const isFull = ps.allocated_count >= ps.capacity;
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
       success: true,
       allocationStatus: statusSetting?.value || 'OPEN',
       testMode: testModeSetting?.value === 'true',
+      ribbonEnabled: ribbonSetting ? ribbonSetting.value === 'true' : true,
       problemStatements: formatted,
     });
   } catch (err: any) {

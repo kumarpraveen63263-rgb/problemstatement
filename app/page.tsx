@@ -48,7 +48,9 @@ export default function LoginPage() {
     if (!next) playClickSound();
   };
 
-  // Check if already logged in on mount
+  const [ribbonEnabled, setRibbonEnabled] = useState<boolean | null>(null);
+
+  // Check existing session and ribbon inauguration setting on mount
   useEffect(() => {
     async function checkExistingSession() {
       try {
@@ -57,11 +59,23 @@ export default function LoginPage() {
           const data = await res.json();
           if (data.authenticated) {
             router.push('/dashboard');
+            return;
           }
         }
       } catch (e) {
         // Not authenticated
       }
+
+      // Check if Ribbon Cutting is enabled in Admin settings
+      try {
+        const statusRes = await fetch('/api/allocation/status');
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          if (typeof statusData.ribbonEnabled === 'boolean') {
+            setRibbonEnabled(statusData.ribbonEnabled);
+          }
+        }
+      } catch (e) {}
     }
     checkExistingSession();
   }, [router]);
@@ -158,8 +172,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-between relative bg-background cyber-grid-bg selection:bg-electric-blue selection:text-black">
       
-      {/* Official Launch Ceremony Ribbon Cutting Overlay */}
-      <RibbonInauguration />
+      {/* Official Launch Ceremony Ribbon Cutting Overlay (Only active when enabled by Admin for Chief Guest) */}
+      {ribbonEnabled !== false && <RibbonInauguration />}
 
       {/* Floating Audio Control in Corner */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50">

@@ -192,6 +192,9 @@ function initDatabase(db: Database.Database) {
     if (!checkSetting.get('emergency_message')) {
       db.prepare("INSERT INTO system_settings (key, value) VALUES ('emergency_message', '')").run();
     }
+    if (!checkSetting.get('ribbon_enabled')) {
+      db.prepare("INSERT INTO system_settings (key, value) VALUES ('ribbon_enabled', 'true')").run();
+    }
 
     // Seed default Problem Statements if empty
     const countPS = (db.prepare('SELECT COUNT(*) as count FROM problem_statements').get() as { count: number }).count;

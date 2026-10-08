@@ -33,6 +33,7 @@ import {
   AlertOctagon,
   Lock,
   RotateCcw,
+  Scissors,
 } from 'lucide-react';
 
 export default function AdminPortalPage() {
@@ -228,6 +229,32 @@ export default function AdminPortalPage() {
       if (res.ok) fetchDashboardData();
     } catch (err) {
       alert('Failed to toggle test mode');
+    }
+  };
+
+  // Toggle Chief Guest Ribbon Cutting Screen
+  const handleToggleRibbon = async () => {
+    playClickSound();
+    if (!stats) return;
+    const nextState = stats.ribbonEnabled === false ? true : false;
+    
+    // Instant optimistic update
+    setStats({ ...stats, ribbonEnabled: nextState });
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ribbonEnabled: nextState }),
+      });
+      if (res.ok) {
+        setSyncStatus(`Chief Guest Ribbon Inauguration is now ${nextState ? 'ENABLED (Ceremony screen active)' : 'DISABLED (Direct portal access active)'}`);
+        setTimeout(() => setSyncStatus(null), 5000);
+        fetchDashboardData();
+      }
+    } catch (err) {
+      alert('Failed to update ribbon screen setting');
+      fetchDashboardData();
     }
   };
 
@@ -640,6 +667,20 @@ export default function AdminPortalPage() {
             >
               <History className="w-3.5 h-3.5" />
               <span>AUDIT</span>
+            </button>
+
+            {/* Manual Ribbon Cutting Toggle Button */}
+            <button
+              onClick={handleToggleRibbon}
+              title={stats?.ribbonEnabled !== false ? 'Click to TURN OFF Ribbon Cutting (Direct Portal Access)' : 'Click to TURN ON Ribbon Cutting (Chief Guest Launch Ceremony)'}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                stats?.ribbonEnabled !== false
+                  ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/50 text-amber-300 shadow-[0_0_15px_rgba(244,180,0,0.25)] hover:bg-amber-500/30'
+                  : 'bg-surface hover:bg-surface-highlight border border-white/10 text-text-muted hover:text-white'
+              }`}
+            >
+              <Scissors className={`w-3.5 h-3.5 ${stats?.ribbonEnabled !== false ? 'text-amber-400' : 'text-text-muted'}`} />
+              <span>{stats?.ribbonEnabled !== false ? 'RIBBON: ON (VIP LAUNCH)' : 'RIBBON: OFF (DISABLED)'}</span>
             </button>
 
             {/* Master System Reset Button (Password Protected) */}

@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
       settings: {
         allocationStatus: settingsMap['allocation_status'] || 'OPEN',
         testMode: settingsMap['test_mode'] === 'true',
+        ribbonEnabled: settingsMap['ribbon_enabled'] !== 'false',
         emergencyMessage: settingsMap['emergency_message'] || '',
       },
       problemStatements,
@@ -71,6 +72,19 @@ export async function POST(req: NextRequest) {
         actorId: session.username,
         action: 'TEST_MODE_TOGGLED',
         metadata: { testMode: body.testMode },
+        ipAddress: ip,
+      });
+    }
+
+    // 3. Ribbon Inauguration toggle
+    if (typeof body.ribbonEnabled === 'boolean') {
+      const ribbonVal = body.ribbonEnabled ? 'true' : 'false';
+      db.prepare("INSERT OR REPLACE INTO system_settings (key, value, updated_at) VALUES ('ribbon_enabled', ?, datetime('now'))").run(ribbonVal);
+      logAudit({
+        actorType: 'ADMIN',
+        actorId: session.username,
+        action: 'RIBBON_INAUGURATION_TOGGLED',
+        metadata: { ribbonEnabled: body.ribbonEnabled },
         ipAddress: ip,
       });
     }
